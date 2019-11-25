@@ -6,18 +6,19 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:02:17 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 11:22:17 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/25 13:49:22 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
+#include <ctype.h>
 
 struct s_ipv4
 {
-	unsigned char d;
-	unsigned char c;
-	unsigned char b;
 	unsigned char a;
+	unsigned char b;
+	unsigned char c;
+	unsigned char d;
 };
 
 union u_ipv4
@@ -26,6 +27,33 @@ union u_ipv4
 	struct s_ipv4 sections;
 };
 
+
+/*
+** Parses the given text `src`, and writes the corresponding ip into `dst`.
+** Returns 0 if pasing failed.
+*/
+static short ParseIp(char *src, struct s_ipv4 *dst)
+{
+	unsigned char *ip = (unsigned char*)dst;
+
+	for (int i=3; i>=0; i--)
+	{
+		unsigned short value = 0;
+		for ((void)src; isdigit(*src); src++)
+			value = (value * 10) + (*src - '0');
+		if (value > 255)
+			return (0);
+		if (*src != (i==0 ? '\0' : '.'))
+			return (0);
+		ip[i] = value;
+		src++;
+	}
+	return (1);
+}
+
+/*
+** Prints the given int32 as binary.
+*/
 static void printmask(unsigned int mask)
 {
 	for (int i=3; i>=0; i--)
@@ -34,14 +62,17 @@ static void printmask(unsigned int mask)
 		short index = j + (i*8);
 		short bit = (mask & 1<<index) ? 1 : 0;
 		printf("%d", bit);
-		if (j == 0)
+		if (j == 0 && i != 0)
 			printf(" ");
 	}
 }
 
+/*
+** Prints the given ip in a human-readable format.
+*/
 static void printip(struct s_ipv4 ip)
 {
-	printf("%u.%u.%u.%u", ip.a, ip.b, ip.c, ip.d);
+	printf("%u.%u.%u.%u", ip.d, ip.c, ip.b, ip.a);
 }
 
 
