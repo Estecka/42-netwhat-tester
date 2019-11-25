@@ -6,7 +6,7 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:02:17 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 15:39:13 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/25 16:25:55 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ union u_ipv4
 	unsigned int raw;
 	struct s_ipv4 sections;
 };
-
 
 static union u_ipv4 networkmask;
 static union u_ipv4 primaryip;
@@ -102,6 +101,37 @@ short getNetmask(int range, struct s_ipv4 *dst)
 	return 1;
 }
 
+void printclass(union u_ipv4 ip)
+{
+	union u_ipv4 class;
+
+	class.sections = (struct s_ipv4){0,0,0,127};
+	if (ip.raw < class.raw)
+			return (void)printf("Class A\n");
+
+	class.sections = (struct s_ipv4){0,0,0,128};
+	if (ip.raw < class.raw)
+			return (void)printf("Localhost IP\n");
+
+	class.sections = (struct s_ipv4){0,0,0,192};
+	if (ip.raw < class.raw)
+			return (void)printf("Class B\n");
+
+	class.sections = (struct s_ipv4){0,0,0,224};
+	if (ip.raw < class.raw)
+			return (void)printf("Class C\n");
+
+	class.sections = (struct s_ipv4){0,0,0,240};
+	if (ip.raw < class.raw)
+			return (void)printf("Class D (multicast)\n");
+
+	class.sections = (struct s_ipv4){0,0,0,255};
+	if (ip.raw < class.raw)
+			return (void)printf("Class E (RnD)\n");
+
+	printf("Broadcast class\n");
+}
+
 static inline void printipFull(union u_ipv4 ip) {
 	printmask(ip.raw);
 	printf("\t");
@@ -122,6 +152,7 @@ void SetHome(struct s_ipv4 ip, struct s_ipv4 netmask)
 
 	printf("IP : \n");
 	printipFull(primaryip);
+	printclass(primaryip);
 
 	printf("\nNetwork Mask : \n");
 	printipFull(networkmask);
