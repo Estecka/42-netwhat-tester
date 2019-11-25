@@ -6,7 +6,7 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:02:17 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 16:25:55 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/25 17:47:23 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ union u_ipv4
 	struct s_ipv4 sections;
 };
 
-static union u_ipv4 networkmask;
-static union u_ipv4 primaryip;
+static union u_ipv4 networkmask = { 0 };
+static union u_ipv4 primaryip = { 0 };
 
 static union u_ipv4 netip;
 static union u_ipv4 broadip;
@@ -139,9 +139,17 @@ static inline void printipFull(union u_ipv4 ip) {
 	printf("\n");
 }
 
-void SetHome(struct s_ipv4 ip, struct s_ipv4 netmask)
+void SetNetworkMask(struct s_ipv4 netmask)
 {
 	networkmask.sections = netmask;
+
+	printf("\nNetwork Mask : \n");
+	printipFull(networkmask);
+	printf("There are %d possible hosts on this network. \n", (~networkmask.raw) - 1);
+}
+
+void SetIp(struct s_ipv4 ip)
+{
 	primaryip.sections = ip;
 
 	netip.raw   = primaryip.raw & networkmask.raw;
@@ -150,12 +158,9 @@ void SetHome(struct s_ipv4 ip, struct s_ipv4 netmask)
 	netlobound.raw = netip.raw + 1;
 	nethibound.raw = broadip.raw - 1;
 
-	printf("IP : \n");
+	printf("\n IP : \n");
 	printipFull(primaryip);
 	printclass(primaryip);
-
-	printf("\nNetwork Mask : \n");
-	printipFull(networkmask);
 
 	printf("\nNetwork IP :\n");
 	printipFull(netip);
@@ -164,8 +169,6 @@ void SetHome(struct s_ipv4 ip, struct s_ipv4 netmask)
 	printipFull(broadip);
 
 	printf("\nHost Range: \n");
-	printf("There are %d possible hosts\n", nethibound.raw - netip.raw);
 	printipFull(netlobound);
 	printipFull(nethibound);
-
 }
