@@ -6,7 +6,7 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:02:17 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 13:49:22 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/25 15:39:13 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,21 @@ union u_ipv4
 };
 
 
+static union u_ipv4 networkmask;
+static union u_ipv4 primaryip;
+
+static union u_ipv4 netip;
+static union u_ipv4 broadip;
+
+static union u_ipv4 netlobound;
+static union u_ipv4 nethibound;
+
+
 /*
 ** Parses the given text `src`, and writes the corresponding ip into `dst`.
 ** Returns 0 if pasing failed.
 */
-static short ParseIp(char *src, struct s_ipv4 *dst)
+short getIp(char *src, struct s_ipv4 *dst)
 {
 	unsigned char *ip = (unsigned char*)dst;
 
@@ -54,7 +64,7 @@ static short ParseIp(char *src, struct s_ipv4 *dst)
 /*
 ** Prints the given int32 as binary.
 */
-static void printmask(unsigned int mask)
+void printmask(unsigned int mask)
 {
 	for (int i=3; i>=0; i--)
 	for (int j=7; j>=0; j--)
@@ -70,32 +80,61 @@ static void printmask(unsigned int mask)
 /*
 ** Prints the given ip in a human-readable format.
 */
-static void printip(struct s_ipv4 ip)
+void printip(struct s_ipv4 ip)
 {
 	printf("%u.%u.%u.%u", ip.d, ip.c, ip.b, ip.a);
 }
 
-
-void ft_netwhat(unsigned int rawip, short maskvalue)
+/*
+** Computes the network mask matching the given range.
+** Returns 0 if the range is invalid.
+*/
+short getNetmask(int range, struct s_ipv4 *dst)
 {
-	union u_ipv4 ip;
-	union u_ipv4 netmask;
+	if (range < 0 || 32 < range)
+		return 0;
 
-	printmask(rawip);
-	printf("\n");
-
-	ip.raw = rawip;
-	printf("ip: \t");
-	printip(ip.sections);
-	printf(" / %hu\n", maskvalue);
-
-	netmask.raw = 0;
+	int* mask = (int*)dst;
+	*mask = 0;
 	for (int i=0; i<32; i++)
-		if (maskvalue >= 32-i)
-			netmask.raw |= 1<<i;
+		if (range >= 32-i)
+			*mask |= 1<<i;
+	return 1;
+}
 
-	printmask(netmask.raw);
-	printf("\nnetmask:\t");
-	printip(netmask.sections);
+static inline void printipFull(union u_ipv4 ip) {
+	printmask(ip.raw);
+	printf("\t");
+	printip(ip.sections);
 	printf("\n");
+}
+
+void SetHome(struct s_ipv4 ip, struct s_ipv4 netmask)
+{
+	networkmask.sections = netmask;
+	primaryip.sections = ip;
+
+	netip.raw   = primaryip.raw & networkmask.raw;
+	broadip.raw = netip.raw | ~networkmask.raw;
+
+	netlobound.raw = netip.raw + 1;
+	nethibound.raw = broadip.raw - 1;
+
+	printf("IP : \n");
+	printipFull(primaryip);
+
+	printf("\nNetwork Mask : \n");
+	printipFull(networkmask);
+
+	printf("\nNetwork IP :\n");
+	printipFull(netip);
+
+	printf("\nBroadcast IP : \n");
+	printipFull(broadip);
+
+	printf("\nHost Range: \n");
+	printf("There are %d possible hosts\n", nethibound.raw - netip.raw);
+	printipFull(netlobound);
+	printipFull(nethibound);
+
 }

@@ -6,29 +6,35 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:07:51 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 13:37:36 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/25 15:39:06 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "ft_nethwat.c"
+#include "ft_netwhat.c"
 
 void ft_netwhat(unsigned int ip, short netmask);
 
 int main(int count, char** args)
 {
-	(void)count;
-	union u_ipv4 ip = {0};
+	union u_ipv4 ip;
+	union u_ipv4 netmask;
 
-	ParseIp(args[1], &ip.sections);
-	printmask(ip.raw);
-	printf("\n");
-	printip(ip.sections);
-	printf("\n");
+	if (count < 3) {
+		printf("Not enough parameters");
+		return 0;
+	}
 
-	//short netmask = atoi(args[1]);
-	//int ip = atoi(args[2]);
+	if (!getNetmask(atoi(args[1]), &netmask.sections)){
+		printf("Invalid network mask");
+		return 0;
+	}
 
-	//ft_netwhat(ip, netmask);
+	if (!getIp(args[2], &ip.sections)){
+		printf("Invalid primary ip");
+		return 0;
+	}
+
+	SetHome(ip.sections, netmask.sections);
 }
