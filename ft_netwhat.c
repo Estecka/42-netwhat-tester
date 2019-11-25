@@ -6,7 +6,7 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:02:17 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 17:47:23 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/25 18:01:32 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,33 +15,33 @@
 
 struct s_ipv4
 {
-	unsigned char a;
-	unsigned char b;
-	unsigned char c;
-	unsigned char d;
+	unsigned char b0;
+	unsigned char b1;
+	unsigned char b2;
+	unsigned char b3;
 };
 
-union u_ipv4
+union ipv4
 {
 	unsigned int raw;
-	struct s_ipv4 sections;
+	struct s_ipv4 bytes;
 };
 
-static union u_ipv4 networkmask = { 0 };
-static union u_ipv4 primaryip = { 0 };
+static union ipv4 networkmask = { 0 };
+static union ipv4 primaryip = { 0 };
 
-static union u_ipv4 netip;
-static union u_ipv4 broadip;
+static union ipv4 netip;
+static union ipv4 broadip;
 
-static union u_ipv4 netlobound;
-static union u_ipv4 nethibound;
+static union ipv4 netlobound;
+static union ipv4 nethibound;
 
 
 /*
 ** Parses the given text `src`, and writes the corresponding ip into `dst`.
 ** Returns 0 if pasing failed.
 */
-short getIp(char *src, struct s_ipv4 *dst)
+short getIp(char *src, union ipv4 *dst)
 {
 	unsigned char *ip = (unsigned char*)dst;
 
@@ -79,16 +79,16 @@ void printmask(unsigned int mask)
 /*
 ** Prints the given ip in a human-readable format.
 */
-void printip(struct s_ipv4 ip)
+void printip(union ipv4 ip)
 {
-	printf("%u.%u.%u.%u", ip.d, ip.c, ip.b, ip.a);
+	printf("%u.%u.%u.%u", ip.bytes.b3, ip.bytes.b2, ip.bytes.b1, ip.bytes.b0);
 }
 
 /*
 ** Computes the network mask matching the given range.
 ** Returns 0 if the range is invalid.
 */
-short getNetmask(int range, struct s_ipv4 *dst)
+short getNetmask(int range, union ipv4 *dst)
 {
 	if (range < 0 || 32 < range)
 		return 0;
@@ -101,56 +101,56 @@ short getNetmask(int range, struct s_ipv4 *dst)
 	return 1;
 }
 
-void printclass(union u_ipv4 ip)
+void printclass(union ipv4 ip)
 {
-	union u_ipv4 class;
+	union ipv4 class;
 
-	class.sections = (struct s_ipv4){0,0,0,127};
+	class.bytes = (struct s_ipv4){0,0,0,127};
 	if (ip.raw < class.raw)
 			return (void)printf("Class A\n");
 
-	class.sections = (struct s_ipv4){0,0,0,128};
+	class.bytes = (struct s_ipv4){0,0,0,128};
 	if (ip.raw < class.raw)
 			return (void)printf("Localhost IP\n");
 
-	class.sections = (struct s_ipv4){0,0,0,192};
+	class.bytes = (struct s_ipv4){0,0,0,192};
 	if (ip.raw < class.raw)
 			return (void)printf("Class B\n");
 
-	class.sections = (struct s_ipv4){0,0,0,224};
+	class.bytes = (struct s_ipv4){0,0,0,224};
 	if (ip.raw < class.raw)
 			return (void)printf("Class C\n");
 
-	class.sections = (struct s_ipv4){0,0,0,240};
+	class.bytes = (struct s_ipv4){0,0,0,240};
 	if (ip.raw < class.raw)
 			return (void)printf("Class D (multicast)\n");
 
-	class.sections = (struct s_ipv4){0,0,0,255};
+	class.bytes = (struct s_ipv4){0,0,0,255};
 	if (ip.raw < class.raw)
 			return (void)printf("Class E (RnD)\n");
 
 	printf("Broadcast class\n");
 }
 
-static inline void printipFull(union u_ipv4 ip) {
+static inline void printipFull(union ipv4 ip) {
 	printmask(ip.raw);
 	printf("\t");
-	printip(ip.sections);
+	printip(ip);
 	printf("\n");
 }
 
-void SetNetworkMask(struct s_ipv4 netmask)
+void SetNetworkMask(union ipv4 netmask)
 {
-	networkmask.sections = netmask;
+	networkmask = netmask;
 
 	printf("\nNetwork Mask : \n");
 	printipFull(networkmask);
 	printf("There are %d possible hosts on this network. \n", (~networkmask.raw) - 1);
 }
 
-void SetIp(struct s_ipv4 ip)
+void SetIp(union ipv4 ip)
 {
-	primaryip.sections = ip;
+	primaryip = ip;
 
 	netip.raw   = primaryip.raw & networkmask.raw;
 	broadip.raw = netip.raw | ~networkmask.raw;
