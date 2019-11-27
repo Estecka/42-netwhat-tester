@@ -6,7 +6,7 @@
 /*   By: abaur <abaur@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/25 10:02:17 by abaur             #+#    #+#             */
-/*   Updated: 2019/11/25 18:01:32 by abaur            ###   ########.fr       */
+/*   Updated: 2019/11/27 16:23:39 by abaur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ static union ipv4 nethibound;
 ** Parses the given text `src`, and writes the corresponding ip into `dst`.
 ** Returns 0 if pasing failed.
 */
-short getIp(char *src, union ipv4 *dst)
+short getIp(const char *src, union ipv4 *dst)
 {
 	unsigned char *ip = (unsigned char*)dst;
 
